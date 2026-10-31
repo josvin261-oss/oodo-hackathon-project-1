@@ -61,10 +61,13 @@
 
     async login({ email, password }) {
       email = String(email || "").trim().toLowerCase();
+      // Generic error on both "no such user" and "wrong password" so the
+      // login form can't be used to enumerate which emails have accounts.
+      const GENERIC_ERR = "Incorrect email or password.";
       const user = db().users.find(u => u.email === email && u.active);
-      if (!user) return { ok: false, error: "No account found for this email." };
+      if (!user) return { ok: false, error: GENERIC_ERR };
       const hash = await D.hashPassword(password, user.salt);
-      if (hash !== user.passwordHash) return { ok: false, error: "Incorrect password." };
+      if (hash !== user.passwordHash) return { ok: false, error: GENERIC_ERR };
       D.setSession({ userId: user.id, role: user.role, at: Date.now() });
       audit("user.login", { email });
       return { ok: true, user };
@@ -351,7 +354,6 @@
         const plan = d.plans.find(p => p.id === sub.planId);
         if (!plan) return;
 
-        let cursor = sub.lastBilledPeriodEnd || sub.startDate;
         let periodStart = sub.lastBilledPeriodEnd || sub.startDate;
         // bill every elapsed period up to onDate, but cap iterations for safety
         let iterations = 0;

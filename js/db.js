@@ -41,12 +41,22 @@
     }
   }
 
-  // ---- simple offline password hashing (SubtleCrypto, no network) ----
+  // ---- offline password hashing (SubtleCrypto, no network) ----
+  // PBKDF2-SHA256 w/ 150k iterations instead of a single SHA-256 pass:
+  // a plain salted SHA-256 hash is fast to brute-force if the localStorage
+  // blob ever leaks (copy/paste, browser extension, shared machine, etc).
+  // PBKDF2 makes each guess ~150k x more expensive at negligible UX cost.
+  const PBKDF2_ITERATIONS = 150000;
   async function hashPassword(password, salt) {
     const enc = new TextEncoder();
-    const data = enc.encode(salt + ":" + password);
-    const digest = await crypto.subtle.digest("SHA-256", data);
-    return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, "0")).join("");
+    const keyMaterial = await crypto.subtle.importKey(
+      "raw", enc.encode(password), { name: "PBKDF2" }, false, ["deriveBits"]
+    );
+    const bits = await crypto.subtle.deriveBits(
+      { name: "PBKDF2", salt: enc.encode(salt), iterations: PBKDF2_ITERATIONS, hash: "SHA-256" },
+      keyMaterial, 256
+    );
+    return Array.from(new Uint8Array(bits)).map(b => b.toString(16).padStart(2, "0")).join("");
   }
   function genSalt() { return uid("salt"); }
 
@@ -152,6 +162,11 @@
     const customerNames = ["Acme Retail", "Nimbus Labs", "Koru Collective", "Vertex Foods", "Pelican Freight",
       "Solace Health", "Brightpath Edu", "Harbor Logistics", "Maple Finance", "Quartz Studio", "Lumen Energy",
       "Cobalt Media", "Driftwood Travel", "Northstar Legal", "Ember Hospitality"];
+    // Ties the seeded company names to the seeded demo *customer* logins so
+    // the customer portal isn't empty on first login. Previously every
+    // generated subscription had customerEmail: null, so "My Subscriptions"
+    // always showed "no subscriptions linked" for all 3 demo customers.
+    const customerEmailMap = { "Acme Retail": "priya@acme.com", "Nimbus Labs": "daniel@nimbus.io", "Koru Collective": "fatima@koru.co" };
     const terms = ["Net 15", "Net 30", "Net 45", "Due on Receipt"];
     const statuses = ["draft", "quotation", "confirmed", "active", "active", "active", "active", "paused", "closed"];
     const tax = db.taxRules[0];
@@ -167,12 +182,13 @@
       const status = statuses[Math.floor(Math.random() * statuses.length)];
       const lineAmount = qty * unitPrice;
       const taxAmount = round2(lineAmount * tax.rate / 100);
+      const baseName = customerNames[i % customerNames.length];
 
       const sub = {
         id: uid("sub"),
         number: "SUB-" + (db.seq.subscription++),
-        customerName: customerNames[i % customerNames.length] + (i >= customerNames.length ? " #" + (Math.floor(i / customerNames.length) + 1) : ""),
-        customerEmail: null,
+        customerName: baseName + (i >= customerNames.length ? " #" + (Math.floor(i / customerNames.length) + 1) : ""),
+        customerEmail: customerEmailMap[baseName] || null,
         planId: plan.id,
         startDate: start,
         expiryDate: expiry,

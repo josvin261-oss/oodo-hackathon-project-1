@@ -89,6 +89,14 @@ payment all mutate that store immediately and persist across reloads.
   customer-portal login — zero console/page errors across the run.
 - Responsive check at 1440px and 390px widths.
 
+## Security & multi-user
+
+This is a client-only app — all data lives in one browser's `localStorage`,
+so "auth" here is a UI convenience, not a real security boundary, and two
+users on two devices never share data. See **[SECURITY.md](SECURITY.md)**
+for specifics, what was hardened, and what a real multi-user/live deployment
+needs (short version: a backend).
+
 ## Notes on the "Must have" checklist
 
 - **Dynamic data, not static JSON** — see above; everything after first boot
