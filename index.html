@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brightloop | Subscription Cockpit</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><rect width=%2232%22 height=%2232%22 rx=%226%22 fill=%22%23354a5f%22/><text x=%2216%22 y=%2222%22 font-size=%2216%22 fill=%22%23fff%22 text-anchor=%22middle%22 font-family=%22Arial%22>B</text></svg>">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<!-- ============ TOP SHELL ============ -->
+<header class="shell-bar" id="shellBar" hidden>
+  <div class="shell-left">
+    <button class="icon-btn" id="navToggle" title="Toggle navigation" aria-label="Toggle navigation">☰</button>
+    <div class="brand">
+      <span class="brand-mark">BRIGHTLOOP</span>
+      <span class="brand-sep">|</span>
+      <span class="brand-sub" id="appTitle">Subscription Cockpit</span>
+    </div>
+  </div>
+  <div class="shell-right">
+    <span class="sync-pill" id="syncPill">● Local data store · offline-capable</span>
+    <div class="user-chip" id="userChip">
+      <span class="avatar" id="avatarInit">U</span>
+      <span class="user-meta">
+        <span class="user-name" id="userNameLbl">—</span>
+        <span class="user-role" id="userRoleLbl">—</span>
+      </span>
+      <button class="link-btn" id="logoutBtn">Sign out</button>
+    </div>
+  </div>
+</header>
+
+<div class="app-shell">
+  <!-- ============ SIDE NAV ============ -->
+  <nav class="side-nav" id="sideNav" hidden>
+    <div class="nav-section-label">Monitor</div>
+    <button class="nav-item" data-view="cockpit"><span class="nav-ico">▦</span>Cockpit</button>
+    <div class="nav-section-label">Sell</div>
+    <button class="nav-item" data-view="quotations"><span class="nav-ico">▤</span>Quotations</button>
+    <button class="nav-item" data-view="subscriptions"><span class="nav-ico">⟲</span>Subscriptions</button>
+    <div class="nav-section-label">Bill</div>
+    <button class="nav-item" data-view="invoices"><span class="nav-ico">▥</span>Invoices</button>
+    <button class="nav-item" data-view="payments"><span class="nav-ico">◎</span>Payments</button>
+    <div class="nav-section-label">Master Data</div>
+    <button class="nav-item" data-view="products" data-role="admin,staff"><span class="nav-ico">▧</span>Products &amp; Plans</button>
+    <button class="nav-item" data-view="discounts" data-role="admin"><span class="nav-ico">%</span>Discount Rules</button>
+    <button class="nav-item" data-view="users" data-role="admin"><span class="nav-ico">◉</span>Users &amp; Roles</button>
+    <div class="nav-section-label">Me</div>
+    <button class="nav-item" data-view="portal" data-role="customer"><span class="nav-ico">⌂</span>My Subscriptions</button>
+    <div class="nav-footer">
+      <div class="nav-footer-row"><span>Records</span><span id="navRecordCount">0</span></div>
+      <div class="nav-footer-row"><span>Engine</span><span>v1.0 local</span></div>
+    </div>
+  </nav>
+
+  <!-- ============ MAIN ============ -->
+  <main class="main-area" id="mainArea">
+    <!-- AUTH SCREEN -->
+    <section id="authScreen" class="auth-screen">
+      <div class="auth-card">
+        <div class="auth-brand">
+          <span class="auth-logo">B</span>
+          <div>
+            <div class="auth-title">Brightloop</div>
+            <div class="auth-sub">Subscription &amp; Recurring Billing Platform</div>
+          </div>
+        </div>
+
+        <div class="auth-tabs">
+          <button class="auth-tab active" data-tab="login">Sign in</button>
+          <button class="auth-tab" data-tab="signup">Create account</button>
+          <button class="auth-tab" data-tab="reset">Forgot password</button>
+        </div>
+
+        <form id="loginForm" class="auth-form">
+          <label>Email<input type="email" id="loginEmail" required placeholder="you@company.com" autocomplete="username"></label>
+          <label>Password<input type="password" id="loginPassword" required placeholder="••••••••" autocomplete="current-password"></label>
+          <div class="form-msg" id="loginMsg"></div>
+          <button type="submit" class="btn-primary full">Sign in</button>
+          <div class="auth-hint">Demo admin: <b>admin@brightloop.com</b> / <b>Admin#1234</b></div>
+        </form>
+
+        <form id="signupForm" class="auth-form" hidden>
+          <label>Full name<input type="text" id="suName" required placeholder="Jane Doe"></label>
+          <label>Email<input type="email" id="suEmail" required placeholder="you@company.com"></label>
+          <label>Password<input type="password" id="suPassword" required placeholder="min 8 chars, Aa1!"></label>
+          <label>Confirm password<input type="password" id="suPassword2" required placeholder="repeat password"></label>
+          <div class="pw-rules" id="pwRules">
+            <span data-rule="len">8+ characters</span>
+            <span data-rule="upper">Uppercase letter</span>
+            <span data-rule="lower">Lowercase letter</span>
+            <span data-rule="special">Special character</span>
+          </div>
+          <div class="form-msg" id="signupMsg"></div>
+          <button type="submit" class="btn-primary full">Create customer account</button>
+        </form>
+
+        <form id="resetForm" class="auth-form" hidden>
+          <label>Registered email<input type="email" id="rsEmail" required placeholder="you@company.com"></label>
+          <div class="form-msg" id="resetMsg"></div>
+          <button type="submit" class="btn-primary full">Send reset link</button>
+          <div class="reset-link-box" id="resetLinkBox" hidden></div>
+        </form>
+      </div>
+    </section>
+
+    <!-- VIEW CONTAINER -->
+    <section id="viewRoot" class="view-root" hidden></section>
+  </main>
+</div>
+
+<!-- generic modal -->
+<div class="modal-backdrop" id="modalBackdrop" hidden>
+  <div class="modal" id="modalBox" role="dialog" aria-modal="true">
+    <div class="modal-head">
+      <span id="modalTitle">Title</span>
+      <button class="icon-btn" id="modalClose">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+
+<script src="js/db.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/views.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
