@@ -67,7 +67,14 @@
       const user = db().users.find(u => u.email === email && u.active);
       if (!user) return { ok: false, error: GENERIC_ERR };
       const hash = await D.hashPassword(password, user.salt);
-      if (hash !== user.passwordHash) return { ok: false, error: GENERIC_ERR };
+      if (hash !== user.passwordHash) {
+        // Accounts saved by older builds used plain salted SHA-256. Accept that
+        // once, then upgrade the stored hash to PBKDF2 so it never recurs.
+        const legacy = await D.legacyHashPassword(password, user.salt);
+        if (legacy !== user.passwordHash) return { ok: false, error: GENERIC_ERR };
+        user.passwordHash = hash;
+        D.persist();
+      }
       D.setSession({ userId: user.id, role: user.role, at: Date.now() });
       audit("user.login", { email });
       return { ok: true, user };

@@ -58,6 +58,14 @@
     );
     return Array.from(new Uint8Array(bits)).map(b => b.toString(16).padStart(2, "0")).join("");
   }
+  // Legacy scheme (pre-hardening builds): SHA-256(salt + ":" + password).
+  // Kept ONLY so accounts already saved in a browser's localStorage can still
+  // sign in; Auth.login re-hashes them with PBKDF2 on the first successful login.
+  async function legacyHashPassword(password, salt) {
+    const data = new TextEncoder().encode(salt + ":" + password);
+    const digest = await crypto.subtle.digest("SHA-256", data);
+    return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, "0")).join("");
+  }
   function genSalt() { return uid("salt"); }
 
   // ---------------------------------------------------------------
@@ -227,7 +235,7 @@
 
   const DB = {
     uid, isoDate, addDays, addMonths, today, nextPeriodEnd, round2,
-    hashPassword, genSalt,
+    hashPassword, legacyHashPassword, genSalt,
     STORAGE_KEY,
     get: function () { return this._cache; },
     _cache: null,
