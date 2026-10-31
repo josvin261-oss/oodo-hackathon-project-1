@@ -53,6 +53,7 @@ input,select,textarea{font-family:inherit;font-size:14px;}
   z-index:50;
   border-bottom:1px solid #0e1821;
 }
+.shell-bar[hidden]{display:none;}
 .shell-left{display:flex;align-items:center;gap:10px;}
 .icon-btn{
   background:transparent;border:1px solid transparent;color:var(--white);
@@ -127,6 +128,7 @@ input,select,textarea{font-family:inherit;font-size:14px;}
 }
 .auth-tab.active{color:var(--blue);border-bottom-color:var(--blue);font-weight:600;}
 .auth-form{display:flex;flex-direction:column;gap:12px;}
+.auth-form[hidden]{display:none;}
 .auth-form label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--grey-700);font-weight:600;}
 .auth-form input{
   border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;font-size:13px;color:var(--grey-900);
